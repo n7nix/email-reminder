@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # File: ncnextup_smtp.sh
-#
+#  - for SJCARS weekly Net Control reminder
 #
 ## ** Index - used to select net control for the week
 # - Index begins at 0
@@ -15,13 +15,13 @@
 #   - First notification does not bump the NCINDEXFILE
 # - Command line arg "next" will bump the INDEX
 #
-## ** Names are maintained on the SJCARS website at SJCARS_NCLIST_URL
+## ** Names of net controllers are maintained on the SJCARS website at
+#     SJCARS_NCLIST_URL
 #
 ## ** Links to the roll call list & net preamble text are maintained on
 #     the SJCARS website at SJCARS_PREAMBLE_URL
 #
-## ** Email addresses are maintained in separate text file
-#  - see NCEMAILFILE definition below
+## ** Email addresses are maintained in config file
 #
 ## ** Error messages are e-mailed to SYSOP_EMAIL
 #
@@ -44,11 +44,6 @@ SYSOP_EMAIL=
 DEBUG_EMAIL_LIST=
 SJCARS_EMAIL_LIST=
 
-
-# Max wait time in seconds for sendmail to create the
-#  outgoing e-mail message
-WAIT_TIME=15
-
 SJCARS_PREAMBLE_URL="http://sjcars.org/blog/nets"
 SJCARS_NCLIST_URL="http://sjcars.org/blog/ncs-rotation"
 
@@ -58,7 +53,7 @@ NCLIST_FILENAME="/home/$user/tmp/ncnames.txt"
 NCLIST_BACKUP_FILENAME="/home/$user/tmp/ncnames_bak.txt"
 # ncindex.txt gets created first time script is run
 NCINDEXFILE="/home/$user/bin/ncindex.txt"
-NCEMAILFILE="/home/$user/bin/ncemail.txt"
+#NCEMAILFILE="/home/$user/bin/ncemail.txt"
 NCMSGFILE="/home/$user/bin/ncmsgfile.txt"
 NCERRFILE="/home/$user/bin/ncerrfile.txt"
 
@@ -95,8 +90,8 @@ fi
 if [ ! -e "$NCINDEXFILE" ] ; then
   echo "$scriptname: file: $NCINDEXFILE does not exist"
 fi
-if [ ! -e "$NCEMAILFILE" ] ; then
-  echo "$scriptname: file: $NCEMAILFILE does not exist"
+if [ ! -e "$email_cfgfile" ] ; then
+  echo "$scriptname: file: $email_cfgfile does not exist"
 fi
 
 }
@@ -260,6 +255,28 @@ return 0
 
 }
 
+# === function find_ncname() =================
+# Search config file for net control name
+# return line found <first_name lastname>, <email_address>
+
+function find_nc_name()
+{
+retcode=0
+echo "Checking for name: $1"
+# Get line number in config file where NET EMAIL LIST begins
+list_index=$(grep -n -m 1 "WED_NET_EMAIL_LIST" $email_cfgfile | cut -d':' -f1)
+echo "list_index: $list_index"
+# Search config file starting from WED_NET_EMAIL_LIST section
+nc_email=$(tail -n+$((list_index + 1)) $email_cfgfile | grep -i "$1" )
+echo "nc_email: $nc_email"
+# Set recode to 1 on error
+if [ -z "$nc_email" ] ; then
+  retcode=1
+fi
+return $retcode
+}
+
+
 #
 # === Main =================
 #
@@ -382,14 +399,20 @@ echo "INFO: Number of names in list $ncnamefile_linecnt, Current Index $ncindex"
 nc_name=$(echo $(echo ${ncname_line[$ncindex]} | awk '{print $1 " " $2}' | cut -f1 -d, ))
 nc_callsign=$(echo $(echo ${ncname_line[$ncindex]} | awk '{print $3}' ))
 
-# check if an e-mail address was found
-grep -i "$nc_name" "$NCEMAILFILE" > /dev/null
+# Search config file for net control name
+
+# oldway: check if an e-mail address was found
+# grep -i "$nc_name" "$NCEMAILFILE" > /dev/null
+#nc_email=$(echo $(grep -i "$nc_name" "$NCEMAILFILE" | awk '{print $3}' ))
+
+# Returns string <first_name last_name>, <email_address>
+find_nc_name "$nc_name"
 if [ $? -ne 0 ] ; then
   errorhandler "No e-mail address found for $nc_name"
   exit 1
+else
+   nc_email=$(echo $nc_email | awk '{print $3}')
 fi
-
-nc_email=$(echo $(grep -i "$nc_name" "$NCEMAILFILE" | awk '{print $3}' ))
 
 echo "INFO: Net Control: $nc_name, Call Sign: $nc_callsign, E-Mail: $nc_email"
 echo
