@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Net Control rotation
+# File: wbnextgup_smtp
+#  - for WhiteBox biweekly Net Control reminder
 #
 # KE7KMK Sheriffs Dispatch
 # KE7KML Lopez Fire
@@ -96,8 +97,8 @@ dbgecho "make_cc_list array: ${cc_array[@]}"
 
 send_email() {
 
-# For test purposes just send email to SYSOP
 if [ ! -z "$DEBUG" ] ; then
+# For test purposes send email to SYSOP & DEBUG_EMAIL_LIST
     dbgecho "DEBUG: Sending to $SYSOP_EMAIL CCing: $DEBUG_EMAIL_LIST"
     make_cc_list "$DEBUG_EMAIL_LIST"
     dbgecho "Check cc_list: ${cc_array[@]}"
