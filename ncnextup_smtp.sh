@@ -34,6 +34,7 @@
 #
 # $Id: ncnextup.sh 149 2013-04-18 17:33:53Z gunn $
 #
+
 DEBUG=0
 
 scriptname="`basename $0`"
@@ -122,12 +123,12 @@ send_email() {
 if [ "$DEBUG" -ne "0" ] ; then
     make_cc_list "$DEBUG_EMAIL_LIST"
     dbgecho mutt line: "$subject" ${cc_array[@]} $SYSOP_EMAIL < $NCMSGFILE
-    mutt  -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $NCMSGFILE
+    mutt -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $NCMSGFILE
 else
 # Send to next net conntrol on list
     make_cc_list "$SJCARS_EMAIL_LIST"
     echo "REAL: Sending to $nc_email CCing: ${cc_array[@]}"
-    mutt  -s "$subject" ${cc_array[@]} $nc_email < $NCMSGFILE
+    mutt -s "$subject" ${cc_array[@]} $nc_email < $NCMSGFILE
 fi
 
 return
@@ -142,7 +143,7 @@ function errorhandler ()
   message=$(echo "Error in $scriptname on $(echo `date`): $1")
   echo $message
   echo $message > $NCERRFILE
-  mutt  -s "$subject" $SYSOP_EMAIL < $NCERRFILE
+  mutt -s "$subject" $SYSOP_EMAIL < $NCERRFILE
 }
 
 #
