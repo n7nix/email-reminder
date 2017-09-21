@@ -14,7 +14,7 @@
 # 31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
 # 31   4  8-14,22-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
 
-DEBUG=1
+DEBUG=
 
 scriptname="`basename $0`"
 
@@ -147,23 +147,32 @@ fi
 echo "$nextup" > $WBLASTFILE
 
 echo "nextup is: $nextup"
-tomorrow=$(date --date="next day" '+%a %b %d')
+tomorrow=$(date --date="next-tuesday" '+%a %b %d')
+
+ntdom=$(date --date="next-tuesday" '+%d')
+if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
+   echo "dom verification pass: dom: $ntdom"
 
 {
-echo
-echo "This is a test bot for the WhiteBox drill ..."
-echo "different than the google groups one."
-echo
-echo "Hey $nextup,"
-echo
-echo " You are net control for the WhiteBox drill tomorrow $tomorrow @ 9:30am"
-echo " Please post the POD (Plan Of the Day) on 2m JNBBS (NET14)"
-echo " and 220 (NET21) if available."
-echo "/N7NIX bot"
+   echo
+   echo "This is a test bot for the WhiteBox drill ..."
+   echo "different than the google groups one."
+   echo
+   echo "Hey $nextup,"
+   echo
+   echo " You are net control for the WhiteBox drill tomorrow $tomorrow @ 9:30am"
+   echo " Please post the POD (Plan Of the Day) on 2m JNBBS (NET14)"
+   echo " and 220 (NET21) if available."
+   echo "/N7NIX bot"
 } > $WBMSGFILE
 
-## form the subject
-subject=$(echo "White Box Net Control - $nextup")
+   # form the subject
+   subject=$(echo "White Box Net Control - $nextup")
+else
+   echo "dom verification fail: dom: $ntdom"
+   exit 1
+fi
+
 }
 
 # ==== function altweek_mail()
@@ -171,23 +180,31 @@ subject=$(echo "White Box Net Control - $nextup")
 
 altweek_mail() {
 
-tomorrow=$(date --date="next day" '+%a %b %d')
+tomorrow=$(date --date="next-tuesday" '+%a %b %d')
+
+ntdom=$(date --date="next-tuesday" '+%d')
+if ((ntdom >= 1 && ntdom <= 7)) || ((ntdom >= 15 && ntdom <= 21)) ; then
+   echo "dom verification pass: dom: $ntdom"
 
 {
-echo "Hi"
-echo
-echo "This is a test bot for the off week WhiteBox drill ..."
-echo "different than the google groups one."
-echo
-echo "There is no Whitebox drill tomorrow $tomorrow @9:30!!"
-echo
-echo "Please delete this email."
-echo
-echo "/N7NIX bot"
+   echo "Hi"
+   echo
+   echo "This is a test bot for the off week WhiteBox drill ..."
+   echo "different than the google groups one."
+   echo
+   echo "There is no Whitebox drill tomorrow $tomorrow @9:30!!"
+   echo
+   echo "Please delete this email."
+   echo
+   echo "/N7NIX bot"
 } > $WBMSGFILE
 
-## form the subject
-subject=$(echo "No White Box tomorrow")
+   # form the subject
+   subject=$(echo "No White Box tomorrow")
+else
+   echo "dom verification fail: dom: $ntdom"
+   exit 1
+fi
 }
 
 # ==== Main
@@ -236,13 +253,27 @@ else
    echo "Using LOPEZ_EMAIL_LIST: $LOPEZ_EMAIL_LIST"
 fi
 
+if [[ $# -gt 0 ]] ; then
+   case "$1" in
+      test)
+      # Set debug flag
+         DEBUG=1
+	 dbgecho "ARGS on command line: $#"
+      ;;
+      alt)
+      # Set alt whitebox flag
+         WHITEBOX_DAY=0
+      ;;
+      *)
+         echo "Usage: $scriptname <test|alt>"
+	 exit 3
+      ;;
+   esac
+fi
+
 #  - send email on 2nd & 4th Mon. for Whitebox
 #  - send email on 1st & 3rd Mon. for alt week meetings
 # if there are any args then use alt week mail msg
-dbgecho "ARGS on command line: $#"
-if [[ $# -gt 0 ]] ; then
-  WHITEBOX_DAY=0
-fi
 
 # Generate appropriate email message
 if [[ $WHITEBOX_DAY == 1 ]] ; then
