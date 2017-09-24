@@ -12,9 +12,9 @@ There is a single config file for both scripts, email addresses are maintained h
 
 ## What the scripts do
 
-### 1. Two identical notices for a weekly event: ncnextup_smtp.sh
+### 1. Two identical email notices for a weekly event: ncnextup_smtp.sh
 
-* Notice is sent out day of and day after event for a rotating net control
+* Notice email is sent out day of and day after event for a rotating net control
 
 ##### Command line arguments
 
@@ -36,12 +36,12 @@ There is a single config file for both scripts, email addresses are maintained h
 5    4   *   *   4  /bin/bash /home/gunn/bin/ncnextup_smtp.sh
 ```
 
-### 2. Single notice on alternate weeks: wbnextup_smtp.sh
+### 2. Single email notice on alternate weeks: wbnextup_smtp.sh
 
-* Notice is sent out day before event
+* Notice email is sent out day before event (Monday)
 * Two different messages are sent depending on week
-  * 2nd & 4th Tuesdays are drill days
-  * 1st & 3rd Tuesdays are discussion & maintenance days
+  * 2nd & 4th Tuesday events are drill days
+  * 1st & 3rd Tuesday events are discussion & maintenance days
 
 ##### Command line arguments
 
@@ -56,7 +56,7 @@ There is a single config file for both scripts, email addresses are maintained h
 * `date +\%u -eq 1` Checks date for being a Monday (day before event)
 
 ```
-31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh -
+31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh alt
 31   4  8-14,22-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh
 
 ```
