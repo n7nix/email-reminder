@@ -149,7 +149,7 @@ echo "$nextup" > $WBLASTFILE
 echo "nextup is: $nextup"
 tomorrow=$(date --date="next-tuesday" '+%a %b %d')
 
-ntdom=$(date --date="next-tuesday" '+%d')
+ntdom=$(date --date="next-tuesday" '+%-d')
 if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo "dom verification pass: dom: $ntdom"
 
