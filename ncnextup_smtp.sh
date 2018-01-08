@@ -98,6 +98,7 @@ fi
 }
 
 # ==== function make_cc_list
+# Make Carbon Copy command line string
 # mutt needs a '-c' in front of each address
 
 make_cc_list() {
@@ -115,7 +116,7 @@ dbgecho "make_cc_list array: ${cc_array[@]}"
 
 #
 # === function send_email() =================
-# generate a mail msg & check for it in outbox
+# Generate mutt command line & send email msg
 #
 send_email() {
 
@@ -142,6 +143,7 @@ function errorhandler ()
   subject=$(echo "Error in $scriptname on $(echo `date`)")
   message=$(echo "Error in $scriptname on $(echo `date`): $1")
   echo $message
+  # Save message in net control error file
   echo $message > $NCERRFILE
   mutt -s "$subject" $SYSOP_EMAIL < $NCERRFILE
 }
@@ -306,22 +308,22 @@ fi
 
 type -P curl &>/dev/null
 if [ $? -ne 0 ] ; then
-  echo "$scriptname: Install cURL please"
-  exit 1
+   echo "$scriptname: Install cURL please"
+   exit 1
 fi
 
 # Is mutt installed?
 
 type -P mutt &>/dev/null
 if [ $? -ne 0 ] ; then
-  echo "$scriptname: Install mutt please"
-  exit 1
+   echo "$scriptname: Install mutt please"
+   exit 1
 fi
 
 # Check for necessary files
 if (( $DEBUG )) ; then
-echo "*** Debug turned on ***"
-file_check
+   echo "*** Debug turned on ***"
+   file_check
 fi
 
 # Read configuration file for email lists
