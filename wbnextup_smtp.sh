@@ -1,14 +1,15 @@
 #!/bin/bash
 #
-# File: wbnextgup_smtp
+# File: wbnextup_smtp
 #  - for WhiteBox biweekly Net Control reminder
 #
-# KE7KMK Sheriffs Dispatch
-# KE7KML Lopez Fire
-# KE7KMM ICV
-# KE7KMN Mullis Fire/SJC EOC
-# KE7KMO Orcas Fire
-# PIMC   Peace Island Medical Center
+# List of Net Control Stations
+#   KE7KMK Sheriffs Dispatch
+#   KE7KML Lopez Fire
+#   KE7KMM ICV
+#   KE7KMN Mullis Fire/SJC EOC
+#   KE7KMO Orcas Fire
+#   PIMC   Peace Island Medical Center
 #
 ## crontab - example cron table follows:
 # 31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
