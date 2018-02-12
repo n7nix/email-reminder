@@ -36,6 +36,17 @@ There is a single config file for both scripts, email addresses are maintained h
 5    4   *   *   4  /bin/bash /home/gunn/bin/ncnextup_smtp.sh
 ```
 
+##### email distribution list
+* Notification email is sent to the following:
+  * current netcontrol taken from addresses following this variable in the whiteboxlist.txt file:
+    * **WED_NET_EMAIL_LIST=**
+  * plus all addresses entered after this variable
+    * **SJCARS_EMAIL_LIST=**
+
+##### Net Control List
+* The list of callsigns used for the net control rotation is taken from this web URL
+  * http://sjcars.org/blog/ncs-rotation
+
 ### 2. Single email notice on alternate weeks: wbnextup_smtp.sh
 
 * Notice email is sent out day before event (Monday)
@@ -60,3 +71,12 @@ There is a single config file for both scripts, email addresses are maintained h
 31   4  8-14,22-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh
 
 ```
+
+##### email distribution lists
+
+* Distribution lists are defined in file: _/etc/emailremind/whiteboxlist.txt_
+* 2nd & 4th Tuesday drills use addresses entered after these variables:
+  *  **GOOGLE_EMAIL_LIST=**
+  *  **LOPEZ_EMAIL_LIST=**
+* 1st & 3rd Tuesday drills use addresses entered after only one variable:
+  *  **LOPEZ_EMAIL_LIST=**
