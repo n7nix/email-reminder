@@ -24,6 +24,7 @@ user=$(whoami)
 SYSOP_EMAIL=
 DEBUG_EMAIL_LIST=
 LOPEZ_EMAIL_LIST=
+GOOGLE_EMAIL_LIST=
 
 WB_ARRAY=("KopShop" "Lopez" "ICV" " Mullis" "Orcas" "Peace Island" "not found")
 
@@ -97,18 +98,24 @@ dbgecho "make_cc_list array: ${cc_array[@]}"
 
 send_email() {
 
+wb_email_list="$1"
+
 if [ ! -z "$DEBUG" ] ; then
 # For test purposes send email to SYSOP & DEBUG_EMAIL_LIST
-    dbgecho "DEBUG: Sending to $SYSOP_EMAIL CCing: $DEBUG_EMAIL_LIST"
-    make_cc_list "$DEBUG_EMAIL_LIST"
-    dbgecho "Check cc_list: ${cc_array[@]}"
-    dbgecho mutt line: "$subject" ${cc_array[@]} $SYSOP_EMAIL
-    mutt  -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $WBMSGFILE
+   echo "subject: $subject"
+   echo "message: "
+   cat $WBMSGFILE
+   dbgecho "DEBUG: Sending to $SYSOP_EMAIL CCing: $DEBUG_EMAIL_LIST"
+   dbgecho "DEBUG: Would have sent to: $wb_email_list"
+   make_cc_list "$DEBUG_EMAIL_LIST"
+   dbgecho "Check cc_list: ${cc_array[@]}"
+   dbgecho mutt line: "$subject" ${cc_array[@]} $SYSOP_EMAIL
+   mutt  -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $WBMSGFILE
 
 else
 # Send to all whitebox participants plus the SYSOP
-    echo "REAL: Sending to $SYSOP_EMAIL CCing: $LOPEZ_EMAIL_LIST"
-    make_cc_list "$LOPEZ_EMAIL_LIST"
+    echo "REAL: Sending to $SYSOP_EMAIL CCing: $wb_email_list"
+    make_cc_list "$wb_email_list"
     echo "Check cc_list: ${cc_array[@]}"
     mutt  -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $WBMSGFILE
 fi
@@ -143,8 +150,11 @@ if [ -z "$nextup" ] ; then
    exit 1
 fi
 
-# save the state of who is next
-echo "$nextup" > $WBLASTFILE
+# Update the state of who is next
+#  if DEBUG is not defined
+if [ -z "$DEBUG" ] ; then
+   echo "$nextup" > $WBLASTFILE
+fi
 
 echo "nextup is: $nextup"
 tomorrow=$(date --date="next-tuesday" '+%a %b %d')
@@ -170,7 +180,11 @@ if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    subject=$(echo "White Box Net Control - $nextup")
 else
    echo "dom verification fail: dom: $ntdom"
-   exit 1
+   # form the subject
+   subject=$(echo "White Box Net Control - bot failed on dom verification")
+   if [ -z "$DEBUG" ] ; then
+      exit 1
+   fi
 fi
 
 }
@@ -203,7 +217,10 @@ if ((ntdom >= 1 && ntdom <= 7)) || ((ntdom >= 15 && ntdom <= 21)) ; then
    subject=$(echo "No White Box tomorrow")
 else
    echo "dom verification fail: dom: $ntdom"
-   exit 1
+   subject=$(echo "No White Box tomorrow - bot failed on dom verification")
+   if [ -z "$DEBUG" ] ; then
+      exit 1
+   fi
 fi
 }
 
@@ -232,6 +249,8 @@ fi
 SYSOP_EMAIL=$(grep "SYSOP_EMAIL" $email_cfgfile | cut -d"=" -f2)
 DEBUG_EMAIL_LIST=$(grep "DEBUG_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
 LOPEZ_EMAIL_LIST=$(grep "LOPEZ_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
+GOOGLE_EMAIL_LIST=$(grep "GOOGLE_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
+WB_EMAIL_LIST="$GOOGLE_EMAIL_LIST $LOPEZ_EMAIL_LIST"
 
 if [ -z "$SYSOP_EMAIL" ] ; then
    echo "Sysop email address not configured"
@@ -247,10 +266,25 @@ else
 fi
 
 if [ -z "$LOPEZ_EMAIL_LIST" ] ; then
-   echo "Email list has not been configured in $email_cfgfile"
+   echo "Lopez email list has not been configured in $email_cfgfile"
    exit 1
 else
    echo "Using LOPEZ_EMAIL_LIST: $LOPEZ_EMAIL_LIST"
+fi
+
+if [ -z "$GOOGLE_EMAIL_LIST" ] ; then
+   echo "Google email list has not been configured in $email_cfgfile"
+else
+   echo "Using GOOGLE_EMAIL_LIST: $GOOGLE_EMAIL_LIST"
+fi
+
+if [ -z "$WB_EMAIL_LIST" ] ; then
+   echo
+   echo "WhiteBox email problem"
+   echo
+   exit 1
+else
+   echo "Using WB_EMAIL_LIST: $WB_EMAIL_LIST"
 fi
 
 if [[ $# -gt 0 ]] ; then
@@ -279,20 +313,11 @@ fi
 if [[ $WHITEBOX_DAY == 1 ]] ; then
   echo "This is a whitebox day script WHITEBOX_DAY: $WHITEBOX_DAY"
   whitebox_mail
+  send_email "$WB_EMAIL_LIST"
 else
   echo "This is NOT a whitebox day script WHITEBOX_DAY: $WHITEBOX_DAY"
   altweek_mail
-fi
-
-# Send email message
-if [ ! -z "$DEBUG" ] ; then
-   echo "subject: $subject"
-   echo "message: "
-   cat $WBMSGFILE
-   send_email
-else
-   echo "Sending email"
-   send_email
+  send_email "$LOPEZ_EMAIL_LIST"
 fi
 
 exit 0
