@@ -45,7 +45,7 @@ There is a single config file for both scripts, email addresses are maintained h
 
 ##### Command line arguments
 
-```wbnextup_smtp.sh <test> <next>```
+```wbnextup_smtp.sh <test> <alt>```
 
 * `No args` used: Send reminder email for 2nd & 4th Tuesday drill
 * `alt` : Set alternate week flag to send reminder email for 1st & 3rd Tuesday meeting.
