@@ -36,6 +36,7 @@
 #
 
 DEBUG=0
+USE_LAST_HTML="false"
 
 scriptname="`basename $0`"
 
@@ -165,18 +166,19 @@ if (( $DEBUG )) ; then
     echo
 fi
 
-echo "CMD: $CURL --user-agent \"$USER_AGENT\" $CURLARGS \"$SJCARS_NCLIST_URL\""
-$CURL  --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_NCLIST_URL" > $NCLIST_HTML_FILENAME
-curl_retcode=$?
+if [ "$USE_LAST_HTML" = "false" ] ; then
+   echo "CMD: $CURL --user-agent \"$USER_AGENT\" $CURLARGS \"$SJCARS_NCLIST_URL\""
+   $CURL  --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_NCLIST_URL" > $NCLIST_HTML_FILENAME
+   curl_retcode=$?
 
-if [ $curl_retcode -ne 0 ] ; then
-    return $curl_retcode
-fi
-
-# if the net control list filename exists rename it something else in case
-#  there is a problem scraping the web site
-if [ -e $NCLIST_FILENAME ] ; then
-    mv -f $NCLIST_FILENAME $NCLIST_BACKUP_FILENAME
+   if [ $curl_retcode -ne 0 ] ; then
+      return $curl_retcode
+   fi
+   # if the net control list filename exists rename it something else in case
+   #  there is a problem scraping the web site
+   if [ -e $NCLIST_FILENAME ] ; then
+      mv -f $NCLIST_FILENAME $NCLIST_BACKUP_FILENAME
+   fi
 fi
 
 startcheck=0;
@@ -192,6 +194,13 @@ while read line ; do
 		    startcheck="1";
 		fi
 	fi
+
+      # Detect a blank line in HTML
+       nclist_line=$(echo $line | grep -i "&nbsp;")
+       if [ ! -z "$nclist_line" ] ; then
+          echo "found empty line in html: $line"
+          continue;
+       fi
 
 	# find end of net control list in HTML file
 	nclist_end=$(echo $line | grep  -i "You can start editing here")
