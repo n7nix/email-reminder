@@ -67,8 +67,8 @@ There is a single config file for both scripts, email addresses are maintained h
 * `date +\%u -eq 1` Checks date for being a Monday (day before event)
 
 ```
-31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh alt
-31   4  8-14,22-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh
+31   4  1-6,14-20   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh alt
+31   4  7-13,21-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/gunn/bin/wbnextup_smtp.sh
 
 ```
 

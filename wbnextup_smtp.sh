@@ -12,8 +12,8 @@
 #   PIMC   Peace Island Medical Center
 #
 ## crontab - example cron table follows:
-# 31   4  1-7,15-21   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
-# 31   4  8-14,22-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
+# 31   4  1-6,14-20   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
+# 31   4  7-13,21-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
 
 DEBUG=
 
@@ -161,13 +161,14 @@ echo "nextup is: $nextup"
 tomorrow=$(date --date="next-tuesday" '+%a %b %d')
 
 ntdom=$(date --date="next-tuesday" '+%-d')
+# Get rid of leading 0's
+ntdom=$((10#$ntdom))
 if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo "dom verification pass: dom: $ntdom"
 
 {
    echo
-   echo "This is a test bot for the WhiteBox drill ..."
-   echo "different than the google groups one."
+   echo "This is a bot message for the WhiteBox drill ..."
    echo
    echo "Hey $nextup,"
    echo
@@ -198,14 +199,16 @@ altweek_mail() {
 tomorrow=$(date --date="next-tuesday" '+%a %b %d')
 
 ntdom=$(date --date="next-tuesday" '+%d')
+# Get rid of leading 0's
+ntdom=$((10#$ntdom))
 if ((ntdom >= 1 && ntdom <= 7)) || ((ntdom >= 15 && ntdom <= 21)) ; then
    echo "dom verification pass: dom: $ntdom"
 
 {
    echo "Hi"
    echo
-   echo "This is a test bot for the off week WhiteBox drill ..."
-   echo "different than the google groups one."
+   echo "This is a bot for the off week WhiteBox drill ..."
+   echo "bot runs on machine: $(uname -a)"
    echo
    echo "There is no Whitebox drill tomorrow $tomorrow @9:30!!"
    echo
