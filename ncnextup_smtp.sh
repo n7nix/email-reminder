@@ -494,6 +494,9 @@ echo
 echo "$preamble_str"
 echo
 echo "If you won't be available, please swap with another NCS."
+echo "http://sjcars.org/blog/ncs-rotation"
+echo
+cat $NCLIST_FILENAME
 echo
 echo "Thanks for being involved,"
 echo "/N7JN bot"
