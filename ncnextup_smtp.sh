@@ -53,6 +53,7 @@ NCLIST_HTML_FILENAME="/home/$user/tmp/nclist_html_tmp.txt"
 # ncnames.txt gets created from scraping website
 NCLIST_FILENAME="/home/$user/tmp/ncnames.txt"
 NCLIST_BACKUP_FILENAME="/home/$user/tmp/ncnames_bak.txt"
+NCLIST_DATEFILE="/home/$user/tmp/ncdates.txt"
 # ncindex.txt gets created first time script is run
 NCINDEXFILE="/home/$user/bin/ncindex.txt"
 #NCEMAILFILE="/home/$user/bin/ncemail.txt"
@@ -78,6 +79,9 @@ echo "curl args: $CURLARGS"
 # Globals for return values from getfilelinks()
 preamble_str="No link found"
 rollcall_str="No link found"
+
+# Net control array of operator names
+declare -A NC_ARRAY
 
 function dbgecho { if [ ! -z "$DEBUG" ] ; then echo "$*"; fi }
 
@@ -288,6 +292,50 @@ fi
 return $retcode
 }
 
+# Find the index of nextup
+# First arg - current index
+# Second arg - total number of netcontrol operators
+function find_nextup()
+{
+  # increment the index for the next net control
+  let ncindex=$1+1
+
+  # Check if the index needs to wrap
+  if [ $ncindex -gt $2 ] ; then
+    let ncindex=0
+    echo
+    echo "DEBUG: Reset ncindex"
+    echo
+  fi
+
+  # Write new index back out to index file
+  echo "$ncindex" > $NCINDEXFILE
+}
+
+# Create a file with dates & net control names
+function create_date_file() {
+i=$1
+#echo "Debug: i: $i, next_index: $next_index"
+cnt=0
+somedays=0
+startdate="$usedate"
+while ((cnt < num_ncs+1))  ; do
+
+    ncname=$(echo "${ncname_line[$i]}" | cut -d ',' -f1)
+    # echo "usedate: $usedate"
+    #printf "%d %-12s: %s, name only: %s\n" $i "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}" "$ncname"
+    printf "%-12s: %s\n" "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}"
+
+    # Increment the number of lines
+    somedays=`expr ${somedays} + 7`
+    usedate="$startdate+$somedays days"
+    let i=i+1
+    if [[ $i = ${#NC_ARRAY[@]} ]] ; then
+	i=0
+    fi
+    let cnt=cnt+1
+done > $NCLIST_DATEFILE
+}
 
 #
 # === Main =================
@@ -295,6 +343,7 @@ return $retcode
 
 # Clear boolean to determine if net control index should be incremented
 BUMPNCINDEX=0
+usedate="next-wednesday"
 
 # if there are any args then parse them
 if (( $# > 0 )) ; then
@@ -305,6 +354,7 @@ if (( $# > 0 )) ; then
 	;;
         next)
 	    BUMPNCINDEX=1
+            usedate="today"
 	;;
 	*)
             echo "Usage: $scriptname <test|next>" >&2
@@ -383,28 +433,24 @@ then
   echo "INFO: file $NCINDEXFILE DOES NOT exist"
   echo "0" > $NCINDEXFILE
 fi
-
-# initialize count of number of lines in Net Control name file
-let ncnamefile_linecnt=0
-
-# Loop through the net control file to find what the maximum number of
-#+ entries are
-
-while read line ; do
-  ncname_line[$ncnamefile_linecnt]=$(echo $line)
-
-#  echo "DEBUG: Line ($ncnamefile_linecnt):  ${ncname_line[$ncnamefile_linecnt]}"
-
-  # Increment the number of lines
-  ncnamefile_linecnt=`expr $ncnamefile_linecnt + 1`
-
-done < $NCLIST_FILENAME
-
 # Load the net control index
 ncindex=$(cat $NCINDEXFILE)
 
+# Loop through the net control file to find what the maximum number of
+#+ entries are
+i=0
+while read line ; do
+    ncname_line[$i]=$(echo $line)
+    ncname=$(echo $line | cut -d ',' -f1)
+    NC_ARRAY[$i]="$ncname"
+    # Increment line count
+    let i=i+1
+done < $NCLIST_FILENAME
+
+num_ncs=${#NC_ARRAY[@]}
+
 echo
-echo "INFO: Number of names in list $ncnamefile_linecnt, Current Index $ncindex"
+echo "INFO: Number of names in list $num_ncs, Current Index $ncindex"
 
 # Load the Net control name, callsign & e-mail address
 
@@ -429,26 +475,15 @@ fi
 echo "INFO: Net Control: $nc_name, Call Sign: $nc_callsign, E-Mail: $nc_email"
 echo
 
+# Create a file with dates & nc names
+create_date_file $ncindex
+
 # check if the net control index is to be incremented
 ## This is to allow multiple (2) e-mails in the week preceding the net
 
 if (( "$BUMPNCINDEX" )) ; then
   echo "DEBUG: NC INDEX IS incremented"
-  # increment the index for the next net control
-  let ncindex=$ncindex+1
-  let ncnamefile_linecnt=$ncnamefile_linecnt-1
-
-  # Check if the index needs to wrap
-  if [ $ncindex -gt $ncnamefile_linecnt ] ; then
-    let ncindex=0
-    echo
-    echo "DEBUG: Reset ncindex"
-    echo
-  fi
-
-  # Write new index back out to index file
-  echo "$ncindex" > $NCINDEXFILE
-
+        find_nextup $ncindex $num_ncs
 else
   echo "DEBUG: NC INDEX is NOT incremented"
 fi
@@ -496,7 +531,7 @@ echo
 echo "If you won't be available, please swap with another NCS."
 echo "http://sjcars.org/blog/ncs-rotation"
 echo
-cat $NCLIST_FILENAME
+cat $NCLIST_DATEFILE
 echo
 echo "Thanks for being involved,"
 echo "/N7JN bot"
