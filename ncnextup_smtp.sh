@@ -88,7 +88,8 @@ function dbgecho { if [ ! -z "$DEBUG" ] ; then echo "$*"; fi }
 #
 # === file_check
 #
-file_check() {
+file_check()
+{
 
 if [ ! -e "$NCLIST_FILENAME" ] ; then
   echo "$scriptname: file: $NCLIST_FILENAME does not exist"
@@ -106,7 +107,8 @@ fi
 # Make Carbon Copy command line string
 # mutt needs a '-c' in front of each address
 
-make_cc_list() {
+make_cc_list()
+{
 
 email_list="$1"
 dbgecho "make_cc_list arg: $email_list"
@@ -123,7 +125,8 @@ dbgecho "make_cc_list array: ${cc_array[@]}"
 # === function send_email() =================
 # Generate mutt command line & send email msg
 #
-send_email() {
+send_email()
+{
 
 # For test purposes just send email to SYSOP
 if [ "$DEBUG" -ne "0" ] ; then
@@ -277,19 +280,19 @@ return 0
 
 function find_nc_name()
 {
-retcode=0
-echo "Checking for name: $1"
-# Get line number in config file where NET EMAIL LIST begins
-list_index=$(grep -n -m 1 "WED_NET_EMAIL_LIST" $email_cfgfile | cut -d':' -f1)
-echo "list_index: $list_index"
-# Search config file starting from WED_NET_EMAIL_LIST section
-nc_email=$(tail -n+$((list_index + 1)) $email_cfgfile | grep -i "$1" )
-echo "nc_email: $nc_email"
-# Set recode to 1 on error
-if [ -z "$nc_email" ] ; then
-  retcode=1
-fi
-return $retcode
+    retcode=0
+    echo "Checking for name: $1"
+    # Get line number in config file where NET EMAIL LIST begins
+    list_index=$(grep -n -m 1 "WED_NET_EMAIL_LIST" $email_cfgfile | cut -d':' -f1)
+    echo "list_index: $list_index"
+    # Search config file starting from WED_NET_EMAIL_LIST section
+    nc_email=$(tail -n+$((list_index + 1)) $email_cfgfile | grep -i "$1" )
+    echo "nc_email: $nc_email"
+    # Set recode to 1 on error
+    if [ -z "$nc_email" ] ; then
+	retcode=1
+    fi
+    return $retcode
 }
 
 # Find the index of nextup
@@ -297,44 +300,44 @@ return $retcode
 # Second arg - total number of netcontrol operators
 function find_nextup()
 {
-  # increment the index for the next net control
-  let ncindex=$1+1
+    # increment the index for the next net control
+    let ncindex=$1+1
 
-  # Check if the index needs to wrap
-  if [ $ncindex -gt $2 ] ; then
-    let ncindex=0
-    echo
-    echo "DEBUG: Reset ncindex"
-    echo
-  fi
+    # Check if the index needs to wrap
+    if [ $ncindex -gt $2 ] ; then
+	let ncindex=0
+	echo
+	echo "DEBUG: Reset ncindex"
+	echo
+    fi
 
-  # Write new index back out to index file
-  echo "$ncindex" > $NCINDEXFILE
+    # Write new index back out to index file
+    echo "$ncindex" > $NCINDEXFILE
 }
 
 # Create a file with dates & net control names
 function create_date_file() {
-i=$1
-#echo "Debug: i: $i, next_index: $next_index"
-cnt=0
-somedays=0
-startdate="$usedate"
-while ((cnt < num_ncs+1))  ; do
+    i=$1
+    #echo "Debug: i: $i, next_index: $next_index"
+    cnt=0
+    somedays=0
+    startdate="$usedate"
+    while ((cnt < num_ncs+1))  ; do
 
-    ncname=$(echo "${ncname_line[$i]}" | cut -d ',' -f1)
-    # echo "usedate: $usedate"
-    #printf "%d %-12s: %s, name only: %s\n" $i "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}" "$ncname"
-    printf "%-12s: %s\n" "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}"
+	ncname=$(echo "${ncname_line[$i]}" | cut -d ',' -f1)
+	# echo "usedate: $usedate"
+	#printf "%d %-12s: %s, name only: %s\n" $i "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}" "$ncname"
+	printf "%-12s: %s\n" "$(date --date="$usedate" +"%B %d")"  "${ncname_line[$i]}"
 
-    # Increment the number of lines
-    somedays=`expr ${somedays} + 7`
-    usedate="$startdate+$somedays days"
-    let i=i+1
-    if [[ $i = ${#NC_ARRAY[@]} ]] ; then
-	i=0
-    fi
-    let cnt=cnt+1
-done > $NCLIST_DATEFILE
+	# Increment the number of lines
+	somedays=`expr ${somedays} + 7`
+	usedate="$startdate+$somedays days"
+	let i=i+1
+	if [[ $i = ${#NC_ARRAY[@]} ]] ; then
+	    i=0
+	fi
+	let cnt=cnt+1
+    done > $NCLIST_DATEFILE
 }
 
 #
