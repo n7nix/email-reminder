@@ -27,7 +27,7 @@ DEBUG_EMAIL_LIST=
 LOPEZ_EMAIL_LIST=
 GOOGLE_EMAIL_LIST=
 
-WB_ARRAY=("KopShop" "Lopez" "ICV" " Mullis" "Orcas" "Peace Island" "not found")
+WB_ARRAY=("KopShop" "Lopez" "ICV" "Mullis" "Orcas" "Peace Island")
 
 # configuration file, has email lists
 email_cfgdir="/etc/emailremind"
@@ -54,7 +54,7 @@ lastup="$1"
 wblen=${#WB_ARRAY[@]}
 for ((i = 0; i < $wblen; i++)) ; do
 
-   if [ "$lastup" = "${WB_ARRAY[$i]}" ] ; then
+   if [ "$lastup" == "${WB_ARRAY[$i]}" ] ; then
      break;
    fi
 done;
@@ -75,6 +75,7 @@ case $i in
    ;;
 esac
 
+echo "getnextup exit: $nextup"
 return 0
 }
 
@@ -163,7 +164,7 @@ tomorrow=$(date --date="next-tuesday" '+%a %b %d')
 ntdom=$(date --date="next-tuesday" '+%-d')
 # Get rid of leading 0's
 ntdom=$((10#$ntdom))
-if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
+if ((ntdom >= 8 && ntdom <= 15)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo "dom verification pass: dom: $ntdom"
 
 {
