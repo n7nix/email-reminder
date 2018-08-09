@@ -304,7 +304,7 @@ function find_nextup()
     let ncindex=$1+1
 
     # Check if the index needs to wrap
-    if [ $ncindex -gt $2 ] ; then
+    if (( $ncindex >= $2 )) ; then
 	let ncindex=0
 	echo
 	echo "DEBUG: Reset ncindex"
