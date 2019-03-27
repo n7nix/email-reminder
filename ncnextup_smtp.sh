@@ -134,7 +134,7 @@ if [ "$DEBUG" -ne "0" ] ; then
     dbgecho mutt line: "$subject" ${cc_array[@]} $SYSOP_EMAIL < $NCMSGFILE
     mutt -s "$subject" ${cc_array[@]} $SYSOP_EMAIL < $NCMSGFILE
 else
-# Send to next net conntrol on list
+# Send to next net control on list
     make_cc_list "$SJCARS_EMAIL_LIST"
     echo "REAL: Sending to $nc_email CCing: ${cc_array[@]}"
     mutt -s "$subject" ${cc_array[@]} $nc_email < $NCMSGFILE
@@ -246,7 +246,8 @@ if (( $DEBUG )) ; then
     echo
 fi
 
-preamble_str="http://sjcars.org/blog/wp-content/uploads/2010/11/Net-Control-Preamble-1.pdf"
+# preamble_str="http://sjcars.org/blog/wp-content/uploads/2010/11/Net-Control-Preamble-1.pdf"
+preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/03/Net-Control-Preamble.pdf"
 
 #preamble_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_PREAMBLE_URL" | grep  -i "$PREAMBLE_DESIGNATOR" | cut -d\" -f2 | cut -d" " -f1)
 #curl_retcode=$?
