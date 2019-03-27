@@ -37,6 +37,7 @@ email_cfgfile="$email_cfgdir/whiteboxlist.txt"
 tmpdir="/home/$user/tmp"
 WBLASTFILE="$tmpdir/wblast.txt"
 WBMSGFILE="$tmpdir/wbmsgfile.txt"
+WBLOGFILE="$tmpdir/wblogfile.txt"
 
 # Set white box day to TRUE
 WHITEBOX_DAY=1
@@ -164,7 +165,7 @@ tomorrow=$(date --date="next-tuesday" '+%a %b %d')
 ntdom=$(date --date="next-tuesday" '+%-d')
 # Get rid of leading 0's
 ntdom=$((10#$ntdom))
-if ((ntdom >= 8 && ntdom <= 15)) || ((ntdom >= 22 && ntdom <= 28)) ; then
+if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo "dom verification pass: dom: $ntdom"
 
 {
@@ -174,7 +175,7 @@ if ((ntdom >= 8 && ntdom <= 15)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo "Hey $nextup,"
    echo
    echo " You are net control for the WhiteBox drill tomorrow $tomorrow @ 9:30am"
-   echo " Please post the POD (Plan Of the Day) on 2m JNBBS (NET14)"
+   echo " Please post the POD (Plan Of the Day) on 2m JNBBS (NET16)"
    echo " and 220 (NET21) if available."
    echo "/N7NIX bot"
 } > $WBMSGFILE
@@ -255,7 +256,7 @@ SYSOP_EMAIL=$(grep "SYSOP_EMAIL" $email_cfgfile | cut -d"=" -f2)
 DEBUG_EMAIL_LIST=$(grep "DEBUG_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
 LOPEZ_EMAIL_LIST=$(grep "LOPEZ_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
 GOOGLE_EMAIL_LIST=$(grep "GOOGLE_EMAIL_LIST" $email_cfgfile | cut -d"=" -f2)
-WB_EMAIL_LIST="$GOOGLE_EMAIL_LIST $LOPEZ_EMAIL_LIST"
+WB_EMAIL_LIST="$GOOGLE_EMAIL_LIST"
 
 if [ -z "$SYSOP_EMAIL" ] ; then
    echo "Sysop email address not configured"
