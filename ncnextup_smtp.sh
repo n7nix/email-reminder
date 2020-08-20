@@ -247,7 +247,8 @@ if (( $DEBUG )) ; then
 fi
 
 # preamble_str="http://sjcars.org/blog/wp-content/uploads/2010/11/Net-Control-Preamble-1.pdf"
-preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/03/Net-Control-Preamble.pdf"
+# preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/03/Net-Control-Preamble.pdf"
+preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/10/Net-Control-Preamble.pdf"
 
 #preamble_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_PREAMBLE_URL" | grep  -i "$PREAMBLE_DESIGNATOR" | cut -d\" -f2 | cut -d" " -f1)
 #curl_retcode=$?
@@ -283,11 +284,12 @@ function find_nc_name()
 {
     retcode=0
     echo "Checking for name: $1"
+
     # Get line number in config file where NET EMAIL LIST begins
     list_index=$(grep -n -m 1 "WED_NET_EMAIL_LIST" $email_cfgfile | cut -d':' -f1)
     echo "list_index: $list_index"
     # Search config file starting from WED_NET_EMAIL_LIST section
-    nc_email=$(tail -n+$((list_index + 1)) $email_cfgfile | grep -i "$1" )
+    nc_email=$(tail -n+$((list_index + 1)) $email_cfgfile | grep -i "^$1" )
     echo "nc_email: $nc_email"
     # Set recode to 1 on error
     if [ -z "$nc_email" ] ; then
@@ -341,6 +343,38 @@ function create_date_file() {
     done > $NCLIST_DATEFILE
 }
 
+# ===== function get email address from net control name
+# Search config file for net control name
+
+function get_email_addr() {
+
+    netcontrol_name="$1"
+    if [ -z "$netcontrol_name" ] ; then
+        echo "No Net control name specified"
+        exit 1
+    fi
+#    echo "DEBGUG: ${FUNCNAME[0]} : netcontrol name $netcontrol_name"
+
+    # oldway: check if an e-mail address was found
+    # grep -i "$nc_name" "$NCEMAILFILE" > /dev/null
+    #nc_email=$(echo $(grep -i "$nc_name" "$NCEMAILFILE" | awk '{print $3}' ))
+
+    # Returns string <first_name last_name>, <email_address>
+    find_nc_name "$netcontrol_name"
+    if [ $? -ne 0 ] ; then
+        errorhandler "No e-mail address found for $netcontrol_name"
+        exit 1
+    else
+       nc_email=$(echo $nc_email | awk '{print $3}')
+    fi
+
+    if [ -z "$nc_callsign" ] ; then
+        nc_callsign=
+    fi
+
+    echo "INFO: Net Control: $netcontrol_name, Call Sign: $nc_callsign, E-Mail: $nc_email"
+}
+
 #
 # === Main =================
 #
@@ -353,6 +387,10 @@ usedate="next-wednesday"
 if (( $# > 0 )) ; then
 
     case "$1" in
+        -e)
+            get_email_addr "$2"
+            exit 0
+        ;;
         test)
 	    DEBUG=1
 	;;
@@ -461,22 +499,7 @@ echo "INFO: Number of names in list $num_ncs, Current Index $ncindex"
 nc_name=$(echo $(echo ${ncname_line[$ncindex]} | awk '{print $1 " " $2}' | cut -f1 -d, ))
 nc_callsign=$(echo $(echo ${ncname_line[$ncindex]} | awk '{print $3}' ))
 
-# Search config file for net control name
-
-# oldway: check if an e-mail address was found
-# grep -i "$nc_name" "$NCEMAILFILE" > /dev/null
-#nc_email=$(echo $(grep -i "$nc_name" "$NCEMAILFILE" | awk '{print $3}' ))
-
-# Returns string <first_name last_name>, <email_address>
-find_nc_name "$nc_name"
-if [ $? -ne 0 ] ; then
-  errorhandler "No e-mail address found for $nc_name"
-  exit 1
-else
-   nc_email=$(echo $nc_email | awk '{print $3}')
-fi
-
-echo "INFO: Net Control: $nc_name, Call Sign: $nc_callsign, E-Mail: $nc_email"
+get_email_addr "$nc_name"
 echo
 
 # Create a file with dates & nc names
