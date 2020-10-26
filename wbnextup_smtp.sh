@@ -13,7 +13,7 @@
 #
 ## crontab - example cron table follows:
 # 31   4  1-6,14-20   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
-# 31   4  7-13,21-28  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
+# 31   4  7-13,21-27  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
 
 DEBUG=
 
@@ -187,6 +187,8 @@ else
    # form the subject
    subject=$(echo "White Box Net Control - bot failed on dom verification")
    if [ -z "$DEBUG" ] ; then
+      # On error, reset last up file
+      echo "$lastup" > $WBLASTFILE
       exit 1
    fi
 fi
@@ -222,7 +224,8 @@ if ((ntdom >= 1 && ntdom <= 7)) || ((ntdom >= 15 && ntdom <= 21)) ; then
    # form the subject
    subject=$(echo "No White Box tomorrow")
 else
-   echo "dom verification fail: dom: $ntdom"
+   echo
+   echo " == dom verification fail: dom: $ntdom =="
    subject=$(echo "No White Box tomorrow - bot failed on dom verification")
    if [ -z "$DEBUG" ] ; then
       exit 1
