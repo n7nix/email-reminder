@@ -46,14 +46,21 @@ SYSOP_EMAIL=
 DEBUG_EMAIL_LIST=
 SJCARS_EMAIL_LIST=
 
-SJCARS_PREAMBLE_URL="http://sjcars.org/blog/nets"
-SJCARS_NCLIST_URL="http://sjcars.org/blog/ncs-rotation"
+# Used by previous web site, now unused
+# SJCARS_PREAMBLE_URL="http://sjcars.org/blog/nets"
+# SJCARS_NCLIST_URL="http://sjcars.org/blog/ncs-rotation"
+
+# All information on one web page as of 02/25/2021
+SJCARS_NCLIST_URL="https://sjcars.wordpress.com/nets/"
+SJCARS_PREAMBLE_URL="https://sjcars.wordpress.com/nets/"
+SJCARS_NCS_ROTATION_URL="https://sjcars.wordpress.com/nets/"
 
 NCLIST_HTML_FILENAME="/home/$user/tmp/nclist_html_tmp.txt"
 # ncnames.txt gets created from scraping website
 NCLIST_FILENAME="/home/$user/tmp/ncnames.txt"
 NCLIST_BACKUP_FILENAME="/home/$user/tmp/ncnames_bak.txt"
 NCLIST_DATEFILE="/home/$user/tmp/ncdates.txt"
+
 # ncindex.txt gets created first time script is run
 NCINDEXFILE="/home/$user/bin/ncindex.txt"
 #NCEMAILFILE="/home/$user/bin/ncemail.txt"
@@ -87,7 +94,8 @@ function dbgecho { if [ ! -z "$DEBUG" ] ; then echo "$*"; fi }
 
 #
 # === file_check
-#
+# Called when DEBUG is turned on
+
 file_check()
 {
 
@@ -157,36 +165,14 @@ function errorhandler ()
 }
 
 #
-# === function nclist() =================
-# Get HTML page that contains the net control list & parse out the name
-# & call sign.
-#
-function nclist ()
-{
+# === function old_nclist_parse() =================
+# Not used as of 02/25/2021
+# **For reference only**
+
+function old_nclist_parse() {
+#SearchStrStart="if you&#8217;d like to join.";
 SearchStrStart="if you&#8217;d like to join.";
 SearchStr1="<td valign=\"top\">";
-
-if (( $DEBUG )) ; then
-    echo "scrape test nclist"
-    echo "URL: $SJCARS_NCLIST_URL"
-    echo "Designator: $SearchStrStart"
-    echo
-fi
-
-if [ "$USE_LAST_HTML" = "false" ] ; then
-   echo "CMD: $CURL --user-agent \"$USER_AGENT\" $CURLARGS \"$SJCARS_NCLIST_URL\""
-   $CURL  --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_NCLIST_URL" > $NCLIST_HTML_FILENAME
-   curl_retcode=$?
-
-   if [ $curl_retcode -ne 0 ] ; then
-      return $curl_retcode
-   fi
-   # if the net control list filename exists rename it something else in case
-   #  there is a problem scraping the web site
-   if [ -e $NCLIST_FILENAME ] ; then
-      mv -f $NCLIST_FILENAME $NCLIST_BACKUP_FILENAME
-   fi
-fi
 
 startcheck=0;
 while read line ; do
@@ -218,6 +204,7 @@ while read line ; do
 
 	# Get netcontrol name & call sign
 	ncname=$(echo $line | grep  -i "$SearchStr1" | cut -d ">" -f2 | cut -d "<" -f1)
+	# Test for non-zero length
 	if [ -n "$ncname" ] ; then
 		read line
 		nccall=$(echo $line | grep  -i "$SearchStr1" | cut -d ">" -f2 | cut -d "<" -f1)
@@ -225,18 +212,83 @@ while read line ; do
 	fi
 
 done < $NCLIST_HTML_FILENAME
+}
+
+#
+# === function nclist() =================
+# Get HTML page that contains the net control list & parse out the name
+# & call sign.
+#
+function nclist () {
+
+if (( $DEBUG )) ; then
+    echo "scrape test nclist"
+    echo "URL: $SJCARS_NCLIST_URL"
+    echo "Designator: $SearchStrStart"
+    echo
+fi
+
+# For debugging use the last captured html of scraped page
+if [ "$USE_LAST_HTML" = "false" ] ; then
+   echo "CMD: $CURL --user-agent \"$USER_AGENT\" $CURLARGS \"$SJCARS_NCLIST_URL\""
+   $CURL  --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_NCLIST_URL" > $NCLIST_HTML_FILENAME
+   curl_retcode=$?
+
+   if [ $curl_retcode -ne 0 ] ; then
+      return $curl_retcode
+   fi
+   # if the net control list filename exists rename it something else in case
+   #  there is a problem scraping the web site
+   if [ -e $NCLIST_FILENAME ] ; then
+      mv -f $NCLIST_FILENAME $NCLIST_BACKUP_FILENAME
+   fi
+fi
+
+# The following line:
+#   - gets the second <tbody> block
+#   - removes all the html tags
+#   - removes all blank lines
+# awk -v N=2 '/<tbody>/ { p++ }p < N {next}1' sjcars_web_nets | sed -ne '/<tbody>/,${p;/<\/tbody>/Q}'
+nclist_1=$(awk -v N=2 '/<tbody>/ { p++ }p < N {next}1' $NCLIST_HTML_FILENAME  | sed -ne '/<tbody>/,${p;/<\/tbody>/Q}' | sed -e 's/<[^>]*>//g' | sed '/^$/d')
+
+while read line ; do
+	# Get netcontrol name & call sign
+	ncname=$line
+	# Test for non-zero length
+	if [ -n "$ncname" ] ; then
+	    read line
+            nccall="$line"
+            echo "$ncname, $nccall" >> $NCLIST_FILENAME
+	fi
+done <<< $nclist_1
+
+# if there was a problem scraping SJCARS website and the netcontrol
+# names file does not exist use backup file
+if [ ! -e $NCLIST_FILENAME ] ; then
+    echo "$scriptname: problem creating: $NCLIST_FILENAME using backup: $NCLIST_BACKUP_FILENAME"
+    cp $NCLIST_BACKUP_FILENAME $NCLIST_FILENAME
+fi
+echo
+echo "Check new NC list file"
+echo
+cat $NCLIST_FILENAME
+echo
+
 return 0
 }
 
 #
 # === function getfilelinks() =================
+# NOT USED, for reference only
 # Set the global vars $preamble_str & $rollcall_str with the links from
 # the SJCARS website
 #
 function getfilelinks ()
 {
 
-PREAMBLE_DESIGNATOR="Preamble.pdf"
+# Used by previous web site
+# PREAMBLE_DESIGNATOR="Preamble.pdf"
+PREAMBLE_DESIGNATOR="Preamble"
 ROLLCALL_DESIGNATOR="RollCall"
 
 if (( $DEBUG )) ; then
@@ -248,7 +300,11 @@ fi
 
 # preamble_str="http://sjcars.org/blog/wp-content/uploads/2010/11/Net-Control-Preamble-1.pdf"
 # preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/03/Net-Control-Preamble.pdf"
-preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/10/Net-Control-Preamble.pdf"
+# Used by previous web site
+# preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/10/Net-Control-Preamble.pdf"
+
+# Current working, but not needed
+# preamble_str=$($CURL $CURLARGS https://sjcars.wordpress.com/nets/ | grep -i "Preamble" | tail -n 1 | cut -d\" -f4)
 
 #preamble_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_PREAMBLE_URL" | grep  -i "$PREAMBLE_DESIGNATOR" | cut -d\" -f2 | cut -d" " -f1)
 #curl_retcode=$?
@@ -261,8 +317,13 @@ preamble_str="http://sjcars.org/blog/wp-content/uploads/2019/10/Net-Control-Prea
 #    return $curl_retcode
 #fi
 
-rollcall_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_PREAMBLE_URL" | grep  -i "$ROLLCALL_DESIGNATOR" | cut -d\" -f2 | cut -d" " -f1)
-curl_retcode=$?
+# Used by previous web site
+# rollcall_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS
+# "$SJCARS_PREAMBLE_URL" | grep  -i "$ROLLCALL_DESIGNATOR" | cut -d\" -f2 | cut -d" " -f1)
+
+# Current working, but not needed
+# rollcall_str=$($CURL --user-agent "$USER_AGENT" $CURLARGS "$SJCARS_PREAMBLE_URL" | grep  -i "$ROLLCALL_DESIGNATOR" | tail -n 1 |  cut -d\" -f4)
+# curl_retcode=$?
 
 if [ "$DEBUG" -ne 0 ] ; then
     echo "CURL retcode ROLLCALL link: $curl_retcode"
@@ -421,7 +482,7 @@ if [ $? -ne 0 ] ; then
    exit 1
 fi
 
-# Check for necessary files
+# DEBUG: Check for necessary files
 if (( $DEBUG )) ; then
    echo "*** Debug turned on ***"
    file_check
@@ -518,13 +579,15 @@ fi
 # Send an e-mail
 ## form the message
 
-# get the web links to the NET Preamble & the current call list
-getfilelinks
-getfilelinks_retcode=$?
+if [ 1 -eq 0 ] ; then
+    # get the web links to the NET Preamble & the current call list
+    getfilelinks
+    getfilelinks_retcode=$?
 
-if [ $getfilelinks_retcode -ne 0 ] ; then
-  errorhandler "Error scraping SJCARS URL - get file links"
-  exit 1
+    if [ $getfilelinks_retcode -ne 0 ] ; then
+        errorhandler "Error scraping SJCARS URL - get file links"
+        exit 1
+    fi
 fi
 
 # Need to bump the index into list of net control operaters?
@@ -547,16 +610,13 @@ echo "Hello $nc_firstname," > $NCMSGFILE
 echo
 echo "You're up $when, for the 8:00PM SJCARS VHF Net."
 echo
-echo "You can down load the Roll Call List from this link:"
+echo "You can down load the Roll Call List and Net Control Preamble"
+echo " by going to the following URL & clicking on links"
 echo
-echo "$rollcall_str"
-echo
-echo "You can down load the Net Control Preamble from this link:"
-echo
-echo "$preamble_str"
+echo "$SJCARS_NCLIST_URL"
 echo
 echo "If you won't be available, please swap with another NCS."
-echo "http://sjcars.org/blog/ncs-rotation"
+echo " The above URL displays a list of all Net Control operators"
 echo
 cat $NCLIST_DATEFILE
 echo
