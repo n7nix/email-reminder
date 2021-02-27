@@ -45,7 +45,8 @@ There is a single config file for both scripts, email addresses are maintained h
 
 ##### Net Control List
 * The list of callsigns used for the net control rotation is taken from this web URL
-  * http://sjcars.org/blog/ncs-rotation
+  * https://sjcars.wordpress.com/nets/
+    *  **OLD address** http://sjcars.org/blog/ncs-rotation
 
 ### 2. Single email notice on alternate weeks: wbnextup_smtp.sh
 
