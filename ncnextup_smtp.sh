@@ -46,7 +46,7 @@ SYSOP_EMAIL=
 DEBUG_EMAIL_LIST=
 SJCARS_EMAIL_LIST=
 
-# Used by previous web site, now unused
+# Used by previous web site, now NOT USED as of 02/25/2021
 # SJCARS_PREAMBLE_URL="http://sjcars.org/blog/nets"
 # SJCARS_NCLIST_URL="http://sjcars.org/blog/ncs-rotation"
 
@@ -166,7 +166,7 @@ function errorhandler ()
 
 #
 # === function old_nclist_parse() =================
-# Not used as of 02/25/2021
+# NOT USED as of 02/25/2021
 # **For reference only**
 
 function old_nclist_parse() {
@@ -279,7 +279,8 @@ return 0
 
 #
 # === function getfilelinks() =================
-# NOT USED, for reference only
+# NOT USED as of 02/25/2021
+# **for reference only**
 # Set the global vars $preamble_str & $rollcall_str with the links from
 # the SJCARS website
 #
