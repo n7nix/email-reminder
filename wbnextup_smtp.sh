@@ -177,9 +177,18 @@ if ((ntdom >= 8 && ntdom <= 14)) || ((ntdom >= 22 && ntdom <= 28)) ; then
    echo " You are net control for the WhiteBox drill tomorrow $tomorrow @ 9:30am"
    echo " Please post the POD (Plan Of the Day) on 2m JNBBS (NET16)"
    echo " and 220 (NET21) if available."
-   echo "/N7NIX bot"
+   echo
 } > $WBMSGFILE
 
+   {
+       echo "RMS Gateway Packet Connection Summary for N7NIX"
+   } >> $WBMSGFILE
+
+   $HOME/bin/show_log.sh -p week >> $WBMSGFILE
+   {
+       echo
+       echo "/N7NIX bot"
+   } >> $WBMSGFILE
    # form the subject
    subject=$(echo "White Box Net Control - $nextup")
 else
@@ -299,12 +308,12 @@ fi
 if [[ $# -gt 0 ]] ; then
    case "$1" in
       test)
-      # Set debug flag
+         # Set debug flag
          DEBUG=1
-	 dbgecho "ARGS on command line: $#"
+	 echo "Debug flag set, ARGS on command line: $#"
       ;;
       alt)
-      # Set alt whitebox flag
+         # Set alt whitebox flag
          WHITEBOX_DAY=0
       ;;
       *)
