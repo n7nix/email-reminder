@@ -454,7 +454,9 @@ if (( $# > 0 )) ; then
             exit 0
         ;;
         test)
+            # Set debug flag
 	    DEBUG=1
+            echo "Debug flag set, ARGS on command line: $#"
 	;;
         next)
 	    BUMPNCINDEX=1
