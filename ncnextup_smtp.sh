@@ -51,13 +51,17 @@ SJCARS_EMAIL_LIST=
 # SJCARS_NCLIST_URL="http://sjcars.org/blog/ncs-rotation"
 
 # All information on one web page as of 02/25/2021
+# NOT scraping a web page as of 07/29/2021
 SJCARS_NCLIST_URL="https://sjcars.wordpress.com/nets/"
 SJCARS_PREAMBLE_URL="https://sjcars.wordpress.com/nets/"
 SJCARS_NCS_ROTATION_URL="https://sjcars.wordpress.com/nets/"
 
 NCLIST_HTML_FILENAME="/home/$user/tmp/nclist_html_tmp.txt"
-# ncnames.txt gets created from scraping website
-NCLIST_FILENAME="/home/$user/tmp/ncnames.txt"
+
+# ncnames.txt NO LONGER created from scraping website
+#NCLIST_FILENAME="/home/$user/tmp/ncnames.txt"
+NCLIST_FILENAME="/home/$user/dev/github/email-reminder/ncnames_file.txt"
+
 NCLIST_BACKUP_FILENAME="/home/$user/tmp/ncnames_bak.txt"
 NCLIST_DATEFILE="/home/$user/tmp/ncdates.txt"
 
@@ -216,10 +220,14 @@ done < $NCLIST_HTML_FILENAME
 
 #
 # === function nclist() =================
+# Should never get called, deprecated
 # Get HTML page that contains the net control list & parse out the name
 # & call sign.
 #
-function nclist () {
+function nclist() {
+
+    echo "No longer scraping web page, get rid of this function."
+    return 0
 
 if (( $DEBUG )) ; then
     echo "scrape test nclist"
@@ -516,15 +524,18 @@ else
    echo "Using SJCARS_EMAIL_LIST: $SJCARS_EMAIL_LIST"
 fi
 
-# Scrape NC list from SJCARS website - call internal function
-nclist
-# If using cURL lib with a C program then do it this way
-# $progname > $NCLIST_FILENAME
-nclist_retcode=$?
+# As of July 29, 2021 DO NOT scrape the SJCARS website
+if [ 1 -eq 0 ] ; then
+    # Scrape NC list from SJCARS website - call internal function
+    nclist
+    # If using cURL lib with a C program then do it this way
+    # $progname > $NCLIST_FILENAME
+    nclist_retcode=$?
 
-if [ $nclist_retcode -ne 0 ] ; then
-  errorhandler "Error scraping SJCARS URL - get net control list"
-  exit 1
+    if [ $nclist_retcode -ne 0 ] ; then
+        errorhandler "Error scraping SJCARS URL - get net control list"
+        exit 1
+    fi
 fi
 
 # make sure the net control name file exists
