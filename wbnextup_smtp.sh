@@ -14,7 +14,10 @@
 ## crontab - example cron table follows:
 # 31   4  1-6,14-20   *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh -
 # 31   4  7-13,21-27  *  * [ `date +\%u` -eq 1 ] && /bin/bash /home/$user/bin/wbnextup_smtp.sh
-
+#
+# Changed group email address:
+#  from: sjcacs@groups.io
+#  to: AuxComm@SJCARS.groups.io
 DEBUG=
 
 scriptname="`basename $0`"
@@ -27,7 +30,9 @@ DEBUG_EMAIL_LIST=
 LOPEZ_EMAIL_LIST=
 GOOGLE_EMAIL_LIST=
 
-WB_ARRAY=("KopShop" "Lopez" "ICV" "Mullis" "Orcas" "Peace Island")
+# Remove ICV from rotation
+#WB_ARRAY=("KopShop" "Lopez" "ICV" "Mullis" "Orcas" "Peace Island")
+WB_ARRAY=("KopShop" "Lopez" "Mullis" "Orcas" "Peace Island")
 
 # configuration file, has email lists
 email_cfgdir="/etc/emailremind"
@@ -61,13 +66,13 @@ for ((i = 0; i < $wblen; i++)) ; do
 done;
 
 case $i in
-   6)
+   5)
       echo "Error nextup not found, lastup: $lastup"
       rm $WBLASTFILE
       nextup="${WB_ARRAY[$i]}"
       return 1
    ;;
-   5)
+   4)
        nextup="${WB_ARRAY[0]}"
    ;;
    *)
